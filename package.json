@@ -1,0 +1,20 @@
+{
+  "name": "serve-as-tar",
+  "version": "0.0.0",
+  "description": "Serve directories as tar packages",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "serve-as-tar": "./index.js"
+  },
+  "author": "Alex Dytrych @somehats",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.14.0",
+    "fstream-ignore": "^1.0.5",
+    "tar": "^2.2.1",
+    "yargs": "^4.8.1"
+  }
+}
