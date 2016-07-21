@@ -6,9 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "bin": {
-    "serve-as-tar": "./index.js"
-  },
+  "bin": "./index.js",
   "author": "Alex Dytrych @somehats",
   "license": "MIT",
   "dependencies": {

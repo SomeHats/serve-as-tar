@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 const Ignore = require('fstream-ignore');
 const path = require('path');
 const tar = require('tar');
