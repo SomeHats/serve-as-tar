@@ -1,7 +1,9 @@
 #!/usr/bin/env node
-const Ignore = require('fstream-ignore');
+const fstreamIgnore = require('fstream-ignore');
 const path = require('path');
+const stream = require('stream');
 const tar = require('tar');
+const zlib = require('zlib');
 
 const app = require('express')();
 
@@ -13,22 +15,49 @@ const argv = require('yargs')
     type: 'number',
     default: 1337,
   })
+  .option('host', {
+    alias: 'h',
+    describe: 'the host to listen on',
+    type: 'string',
+    default: '0.0.0.0',
+  })
   .demand(1, 'must give a folder to serve')
   .argv;
 
-argv._.forEach(name =>
-  app.get(`/${name}`, (req, res, next) => {
+const handleErrors = (stream, onError) =>
+  stream.on('error', onError);
+
+const pipeStep = onError => (stream, step) =>
+  handleErrors(stream.pipe(step), onError);
+
+const fileStream = name =>
+  fstreamIgnore({
+    path: path.resolve(name),
+    ignoreFiles: ['.serve-as-tar-ignore'],
+  });
+
+const serveFile = (name, steps, onError) =>
+  steps.reduce(pipeStep(onError), handleErrors(fileStream(name), onError));
+
+argv._.forEach(name => {
+  app.get(`/${name}(.tar)?`, (req, res, next) => {
     res.set('Content-Type', 'application/tar');
+    serveFile(name, [tar.Pack(), res], next);
+  });
 
-    Ignore({ path: path.resolve(name), ignoreFiles: ['.serve-as-tar-ignore'] })
-      .on('error', next)
-      .pipe(tar.Pack())
-      .on('error', next)
-      .pipe(res)
-      .on('error', next)
-  }));
+  app.get(`/${name}.tar.gz`, (req, res, next) => {
+    res.set('Content-Type', 'application/tar+gzip');
+    serveFile(name, [tar.Pack(), zlib.createGzip(), res], next);
+  });
+});
 
-app.listen(argv.port, err => {
+const url = (name, ext = '') => `http://${argv.host}:${argv.port}/${name}${ext}`;
+
+app.listen(argv.port, argv.host, err => {
   if (err) throw err;
-  console.log(`serve-as-tar serving ${argv._.join(', ')} on port ${argv.port}`);
+  console.log(`serve-as-tar listening`);
+  console.log(
+    argv._
+      .map(name => [url(name), url(name, '.tar'), url(name, '.tar.gz')].join('\n'))
+      .join('\n'));
 });
