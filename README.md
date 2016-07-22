@@ -5,7 +5,7 @@ Serve directories as tar packages.
 #### Usage:
 ```sh
 npm install -g serve-as-tar
-serve-as-tar [--port <port number>] some-directory some-other-directory ...
+serve-as-tar [--host <some hostname> --port <port number>] some-directory some-other-directory ...
 ```
 
 #### Ignoring files
